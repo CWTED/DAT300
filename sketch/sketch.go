@@ -98,8 +98,33 @@ func (s *Sketch) EstimateF2() uint64 {
     return f2Est
 }
 
+// Combine multiple sketches
+// 
+// OBS!!! No idea if it works correctly regarding the pointers of combinedSketch and elem[0].Sketch. 
+// It should copy the contents of the pointer, and not point to the same object.
+func Combine(elem ... ScalarSketch) *Sketch {
+    combinedSketch := elem[0].Sketch
+
+    for i, row := range combinedSketch.count {
+        for j, _ := range row {
+            var sum uint64
+            for _, scalarSketch := range elem {
+                sum += scalarSketch.Sketch.count[i][j] * scalarSketch.Alpha
+            }
+
+            combinedSketch.count[i][j] = sum
+        }
+    }
+
+    return combinedSketch
+}
+
 
 // ------------------------------------ HELPER FUNCTIONS ---------------------------------------------------
+type ScalarSketch struct {
+    Sketch *Sketch
+    Alpha uint64
+}
 // D returns the number of hashing functions
 func (s *Sketch) H() uint {
 	return s.h
