@@ -107,12 +107,12 @@ func Combine(elem ... ScalarSketch) *Sketch {
 
     for i, row := range combinedSketch.count {
         for j, _ := range row {
-            var sum uint64
+            var sum float64
             for _, scalarSketch := range elem {
-                sum += scalarSketch.Sketch.count[i][j] * scalarSketch.Alpha
+                sum += float64(scalarSketch.Sketch.count[i][j]) * scalarSketch.Alpha
             }
 
-            combinedSketch.count[i][j] = sum
+            combinedSketch.count[i][j] = uint64(sum)
         }
     }
 
@@ -123,7 +123,7 @@ func Combine(elem ... ScalarSketch) *Sketch {
 // ------------------------------------ HELPER FUNCTIONS ---------------------------------------------------
 type ScalarSketch struct {
     Sketch *Sketch
-    Alpha uint64
+    Alpha float64
 }
 // D returns the number of hashing functions
 func (s *Sketch) H() uint {
