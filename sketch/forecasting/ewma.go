@@ -2,7 +2,7 @@ package forecasting
 
 import (
 	"errors"
-	"sketch"
+	"sketch/sketch"
 )
 
 type EWMA struct {

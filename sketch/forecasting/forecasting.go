@@ -1,7 +1,7 @@
 package forecasting
 
 import (
-	"sketch"
+	"sketch/sketch"
 )
 
 type Forecasting interface {
