@@ -1,4 +1,4 @@
-package main
+package datastream
 
 import (
 	"fmt" // Import the fmt package to print messages to the console.
@@ -11,7 +11,7 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-func main() {
+func StreamData() {
 	// Check if file argument is provided
 	if len(os.Args) < 2 {
 		fmt.Println("Please provide a pcap file to read")
