@@ -5,6 +5,7 @@ import (
 	"log" // Import the log package to log errors to the console.
 	"os"
 
+	"github.com/barweiss/go-tuple"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
@@ -28,23 +29,41 @@ func main() {
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range packetSource.Packets() {
 
+		// per packet tuple creation
+		netTup := tuple.New4("", "", "", "")
+
 		// Print the packet details
-		fmt.Println(packet.String())
+		//fmt.Println(packet.String())
 
 		// Extract and print the Ethernet layer
 		ethLayer := packet.Layer(layers.LayerTypeEthernet)
 		if ethLayer != nil {
-			ethPacket, _ := ethLayer.(*layers.Ethernet)
-			fmt.Println("Ethernet source MAC address:", ethPacket.SrcMAC)
-			fmt.Println("Ethernet destination MAC address:", ethPacket.DstMAC)
+			//ethPacket, _ := ethLayer.(*layers.Ethernet)
+			//fmt.Println("Ethernet source MAC address:", ethPacket.SrcMAC)
+			//fmt.Println("Ethernet destination MAC address:", ethPacket.DstMAC)
 		}
 
 		// Extract and print the IP layer
 		ipLayer := packet.Layer(layers.LayerTypeIPv4)
 		if ipLayer != nil {
 			ipPacket, _ := ipLayer.(*layers.IPv4)
-			fmt.Println("IP source address:", ipPacket.SrcIP)
-			fmt.Println("IP destination address:", ipPacket.DstIP)
+			//fmt.Println("IP source address:", ipPacket.SrcIP)
+			//	fmt.Println("IP destination address:", ipPacket.DstIP)
+			netTup.V1 = ipPacket.SrcIP.String()
+			netTup.V2 = ipPacket.DstIP.String()
+
+			// add to tuple
 		}
+		tcpLayer := packet.Layer(layers.LayerTypeTCP)
+		if tcpLayer != nil {
+			tcpPacket, _ := tcpLayer.(*layers.TCP)
+			//fmt.Println("SrcPrt:", tcpPacket.SrcPort)
+			//fmt.Println("DstPrt:", tcpPacket.DstPort)
+			// add to tuple
+			netTup.V3 = tcpPacket.SrcPort.String()
+			netTup.V4 = tcpPacket.DstPort.String()
+		}
+		fmt.Println(netTup)
 	}
+
 }
