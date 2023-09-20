@@ -99,14 +99,11 @@ func (s *Sketch) EstimateF2() uint64 {
 }
 
 // Combine multiple sketches
-// 
-// OBS!!! No idea if it works correctly regarding the pointers of combinedSketch and elem[0].Sketch. 
-// It should copy the contents of the pointer, and not point to the same object.
 func Combine(elem ... ScalarSketch) *Sketch {
     combinedSketch := elem[0].Sketch
 
     for i, row := range combinedSketch.count {
-        for j, _ := range row {
+        for j := range row {
             var sum float64
             for _, scalarSketch := range elem {
                 sum += float64(scalarSketch.Sketch.count[i][j]) * scalarSketch.Alpha
