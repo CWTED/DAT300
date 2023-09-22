@@ -11,6 +11,8 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+var CommsCh chan []tuple.T4[string, string, string, string]
+
 func StreamData() {
 	// Check if file argument is provided
 	if len(os.Args) < 2 {
@@ -24,6 +26,12 @@ func StreamData() {
 		log.Fatal(err)
 	}
 	defer handle.Close()
+
+	// Define channel for comms
+	CommsCh = make(chan []tuple.T4[string, string, string, string], 10000)
+
+	// Define tuple list
+	var tupleList []tuple.T4[string, string, string, string]
 
 	// Loop through packets in file
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
@@ -63,7 +71,11 @@ func StreamData() {
 			netTup.V3 = tcpPacket.SrcPort.String()
 			netTup.V4 = tcpPacket.DstPort.String()
 		}
-		fmt.Println(netTup)
+		//fmt.Println(netTup)
+
+		tupleList = append(tupleList, netTup)
+
 	}
+	CommsCh <- tupleList
 
 }

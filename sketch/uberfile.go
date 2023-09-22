@@ -1,9 +1,18 @@
 package main
 
 import (
+	"fmt"
 	"sketch/datastream"
 )
 
 func main() {
-	go datastream.StreamData()
+	datastream.StreamData()
+
+	select {
+	case receivedList := <-datastream.CommsCh:
+		fmt.Println(receivedList)
+	default:
+		break
+	}
+
 }
