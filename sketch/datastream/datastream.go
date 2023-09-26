@@ -11,9 +11,9 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
-var CommsCh chan []tuple.T4[string, string, string, string]
+//var CommsCh chan tuple.T4[string, string, string, string]
 
-func StreamData() {
+func StreamData() []tuple.T4[string, string, string, string] {
 	// Check if file argument is provided
 	if len(os.Args) < 2 {
 		fmt.Println("Please provide a pcap file to read")
@@ -28,7 +28,7 @@ func StreamData() {
 	defer handle.Close()
 
 	// Define channel for comms
-	CommsCh = make(chan []tuple.T4[string, string, string, string], 10000)
+	//CommsCh = make(chan tuple.T4[string, string, string, string], 1)
 
 	// Define tuple list
 	var tupleList []tuple.T4[string, string, string, string]
@@ -71,11 +71,11 @@ func StreamData() {
 			netTup.V3 = tcpPacket.SrcPort.String()
 			netTup.V4 = tcpPacket.DstPort.String()
 		}
-		//fmt.Println(netTup)
+		//CommsCh <- netTup
 
 		tupleList = append(tupleList, netTup)
 
 	}
-	CommsCh <- tupleList
+	return tupleList
 
 }

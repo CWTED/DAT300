@@ -3,16 +3,18 @@ package main
 import (
 	"fmt"
 	"sketch/datastream"
+	"sketch/kary"
 )
 
 func main() {
-	datastream.StreamData()
+	receivedList := datastream.StreamData() // data pre-processing
 
-	select {
-	case receivedList := <-datastream.CommsCh:
-		fmt.Println(receivedList)
-	default:
-		break
+	for index := range receivedList {
+		kary.Update(receivedList[index]) // on demand, give next data entry to sketch
+
+		// time the sketch phases
 	}
 
+	// print the estimate of the kary sketch
+	fmt.Printf("Result: %v", kary.Estimate())
 }
