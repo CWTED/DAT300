@@ -5,15 +5,22 @@ import (
 	"log" // Import the log package to log errors to the console.
 	"os"
 
-	"github.com/barweiss/go-tuple"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 )
 
+type Packet struct {
+	srcIP    string
+	dstIP    string
+	srcPort  string
+	dstPort  string
+	protocol string
+}
+
 //var CommsCh chan tuple.T4[string, string, string, string]
 
-func StreamData() []tuple.T4[string, string, string, string] {
+func StreamData() []Packet {
 	// Check if file argument is provided
 	if len(os.Args) < 2 {
 		fmt.Println("Please provide a pcap file to read")
@@ -31,14 +38,16 @@ func StreamData() []tuple.T4[string, string, string, string] {
 	//CommsCh = make(chan tuple.T4[string, string, string, string], 1)
 
 	// Define tuple list
-	var tupleList []tuple.T4[string, string, string, string]
+	//var tupleList []tuple.T4[string, string, string, string]
+	var packets Packet
+	var packetList []Packet
 
 	// Loop through packets in file
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range packetSource.Packets() {
 
 		// per packet tuple creation
-		netTup := tuple.New4("", "", "", "")
+		//netTup := tuple.New4("", "", "", "")
 
 		// Print the packet details
 		//fmt.Println(packet.String())
@@ -57,8 +66,8 @@ func StreamData() []tuple.T4[string, string, string, string] {
 			ipPacket, _ := ipLayer.(*layers.IPv4)
 			//fmt.Println("IP source address:", ipPacket.SrcIP)
 			//	fmt.Println("IP destination address:", ipPacket.DstIP)
-			netTup.V1 = ipPacket.SrcIP.String()
-			netTup.V2 = ipPacket.DstIP.String()
+			packets.srcIP = ipPacket.SrcIP.String()
+			packets.dstIP = ipPacket.DstIP.String()
 
 			// add to tuple
 		}
@@ -68,14 +77,15 @@ func StreamData() []tuple.T4[string, string, string, string] {
 			//fmt.Println("SrcPrt:", tcpPacket.SrcPort)
 			//fmt.Println("DstPrt:", tcpPacket.DstPort)
 			// add to tuple
-			netTup.V3 = tcpPacket.SrcPort.String()
-			netTup.V4 = tcpPacket.DstPort.String()
+			packets.srcPort = tcpPacket.SrcPort.String()
+			packets.dstPort = tcpPacket.DstPort.String()
 		}
 		//CommsCh <- netTup
+		packets.protocol = ""
 
-		tupleList = append(tupleList, netTup)
+		packetList = append(packetList, packets)
 
 	}
-	return tupleList
+	return packetList
 
 }
