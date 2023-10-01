@@ -7,13 +7,13 @@ import (
 )
 
 type Change struct {
-	sk   *sketch.Sketch
-	prev *sketch.Sketch
-	erSk *sketch.Sketch
+	obs   *sketch.Sketch // Observed sketch
+	forec *sketch.Sketch // Forecasted sketcj
+	erSk  *sketch.Sketch // Error sketch
 }
 
-func FEDetect(s *sketch.Sketch, prev *sketch.Sketch, T uint64, key []byte) (uint64, uint64, error) {
-	change := Change{sk: s, prev: prev}
+func FEDetect(observed *sketch.Sketch, forecasted *sketch.Sketch, T uint64, key []byte) (uint64, uint64, error) {
+	change := Change{obs: observed, forec: forecasted}
 
 	change.errorSketch()
 
@@ -21,8 +21,8 @@ func FEDetect(s *sketch.Sketch, prev *sketch.Sketch, T uint64, key []byte) (uint
 }
 
 func (s *Change) errorSketch() {
-	observed := sketch.ScalarSketch{Sketch: s.sk, Alpha: 1}
-	previous := sketch.ScalarSketch{Sketch: s.prev, Alpha: -1}
+	observed := sketch.ScalarSketch{Sketch: s.obs, Alpha: 1}
+	previous := sketch.ScalarSketch{Sketch: s.forec, Alpha: -1}
 	s.erSk = sketch.Combine(observed, previous)
 }
 
