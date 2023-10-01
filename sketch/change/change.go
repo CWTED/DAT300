@@ -12,7 +12,7 @@ type Change struct {
 	erSk  *sketch.Sketch // Error sketch
 }
 
-func FEDetect(observed *sketch.Sketch, forecasted *sketch.Sketch, T uint64, key []byte) (uint64, uint64, error) {
+func FEDetect(observed *sketch.Sketch, forecasted *sketch.Sketch, T float64, key []byte) (uint64, uint64, error) {
 	change := Change{obs: observed, forec: forecasted}
 
 	change.errorSketch()
@@ -28,7 +28,7 @@ func (s *Change) errorSketch() {
 
 // Choose threshold from c.skEr, T,
 // reconstruct forecast error from given key and alert if above threshold TA
-func reconstructFE(c *Change, key []byte, T uint64) (uint64, uint64, error) {
+func reconstructFE(c *Change, key []byte, T float64) (uint64, uint64, error) {
 
 	TA := chooseThreshold(c, T)
 
@@ -42,8 +42,8 @@ func reconstructFE(c *Change, key []byte, T uint64) (uint64, uint64, error) {
 }
 
 // Choose threshold by altering T-value: Lower T gives lower threshold
-func chooseThreshold(c *Change, T uint64) uint64 {
+func chooseThreshold(c *Change, T float64) uint64 {
 
-	return T * uint64(math.Pow(float64(c.erSk.EstimateF2()), float64(0.5)))
+	return uint64(T * math.Pow(float64(c.erSk.EstimateF2()), float64(0.5)))
 
 }
