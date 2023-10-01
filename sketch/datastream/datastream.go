@@ -52,14 +52,6 @@ func StreamData() []Packet {
 		// Print the packet details
 		//fmt.Println(packet.String())
 
-		// Extract and print the Ethernet layer
-		ethLayer := packet.Layer(layers.LayerTypeEthernet)
-		if ethLayer != nil {
-			//ethPacket, _ := ethLayer.(*layers.Ethernet)
-			//fmt.Println("Ethernet source MAC address:", ethPacket.SrcMAC)
-			//fmt.Println("Ethernet destination MAC address:", ethPacket.DstMAC)
-		}
-
 		// Extract and print the IP layer
 		ipLayer := packet.Layer(layers.LayerTypeIPv4)
 		if ipLayer != nil {
@@ -68,6 +60,7 @@ func StreamData() []Packet {
 			//	fmt.Println("IP destination address:", ipPacket.DstIP)
 			packets.srcIP = ipPacket.SrcIP.String()
 			packets.dstIP = ipPacket.DstIP.String()
+			packets.protocol = ipPacket.Protocol.String()
 
 			// add to tuple
 		}
@@ -81,7 +74,6 @@ func StreamData() []Packet {
 			packets.dstPort = tcpPacket.DstPort.String()
 		}
 		//CommsCh <- netTup
-		packets.protocol = ""
 
 		packetList = append(packetList, packets)
 
