@@ -17,9 +17,7 @@ type Packet struct {
 	Protocol string
 }
 
-//var CommsCh chan tuple.T4[string, string, string, string]
-
-func StreamData(file string) []Packet {
+func StreamData(file string, channel chan Packet) {
 	// Open up the pcap file for reading
 	handle, err := pcap.OpenOffline(file)
 	if err != nil {
@@ -27,35 +25,19 @@ func StreamData(file string) []Packet {
 	}
 	defer handle.Close()
 
-	// Define channel for comms
-	//CommsCh = make(chan tuple.T4[string, string, string, string], 1)
-
-	// Define tuple list
-	//var tupleList []tuple.T4[string, string, string, string]
-	var packets Packet
-	var packetList []Packet
+	// Packet that shall be sent in channel
+	var p Packet
 
 	// Loop through packets in file
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range packetSource.Packets() {
-
-		// per packet tuple creation
-		//netTup := tuple.New4("", "", "", "")
-
-		// Print the packet details
-		//fmt.Println(packet.String())
-
 		// Extract and print the IP layer
 		ipLayer := packet.Layer(layers.LayerTypeIPv4)
 		if ipLayer != nil {
 			ipPacket, _ := ipLayer.(*layers.IPv4)
-			//fmt.Println("IP source address:", ipPacket.SrcIP)
-			//	fmt.Println("IP destination address:", ipPacket.DstIP)
-			packets.SrcIP = ipPacket.SrcIP.String()
-			packets.DstIP = ipPacket.DstIP.String()
-			packets.Protocol = ipPacket.Protocol.String()
-
-			// add to tuple
+			p.SrcIP = ipPacket.SrcIP.String()
+			p.DstIP = ipPacket.DstIP.String()
+			p.Protocol = ipPacket.Protocol.String()
 		}
 
 		/*ipLayer6 := packet.Layer(layers.LayerTypeIPv6)
@@ -66,26 +48,17 @@ func StreamData(file string) []Packet {
 			packets.srcIP = ipPacket6.SrcIP.String()
 			packets.dstIP = ipPacket6.DstIP.String()
 			packets.protocol = ipPacket6.NextHeader.String()
-
-			// add to tuple
 		}*/
 
 		tcpLayer := packet.Layer(layers.LayerTypeTCP)
 		if tcpLayer != nil {
 			tcpPacket, _ := tcpLayer.(*layers.TCP)
-			//fmt.Println("SrcPrt:", tcpPacket.SrcPort)
-			//fmt.Println("DstPrt:", tcpPacket.DstPort)
-			// add to tuple
-			packets.SrcPort = tcpPacket.SrcPort.String()
-			packets.DstPort = tcpPacket.DstPort.String()
+			p.SrcPort = tcpPacket.SrcPort.String()
+			p.DstPort = tcpPacket.DstPort.String()
 		}
-		//CommsCh <- netTup
-
-		packetList = append(packetList, packets)
-
+		channel <- p
 	}
-	return packetList
-
+	close(channel)
 }
 
 func (p *Packet) ToBytes() []byte {

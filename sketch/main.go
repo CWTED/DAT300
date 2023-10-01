@@ -28,8 +28,10 @@ func main() {
 
 	anomalies := make(chan Data)
 	go ExportData(anomalies)
+	defer close(anomalies)
 
-	receivedList := datastream.StreamData(os.Args[1]) // data pre-processing
+	dataChannel := make(chan datastream.Packet)
+	go datastream.StreamData(os.Args[1], dataChannel) // data pre-processing
 
 	// Create the main sketch
 	s, err := sketch.New(uint(h), uint(k))
@@ -44,10 +46,12 @@ func main() {
 	)
 	forecastAlgo = forecasting.EWMA{Alpha: 0.1}
 
+	// Variable representing how many times the algorithm has iterated
+	index := 0
 	// Variable representing how many packets is one epoch
 	epoch := 10
 
-	for index, packet := range receivedList {
+	for packet := range dataChannel {
 		// Update the forecasting sketch if there is a new epoch
 		if index % epoch == 0 && index > 0 {
 			fSketch, err = forecastAlgo.Forecast(s)
@@ -71,7 +75,7 @@ func main() {
 				fmt.Printf("Anomaly detected!\t Observed change: %d, Threshold: %d", observedChange, thresholdChange)
 			}
 		}
-
+		index++
 	}
 
 	fmt.Println("Main sketch at the end:")
