@@ -10,11 +10,11 @@ import (
 )
 
 type Packet struct {
-	srcIP    string
-	dstIP    string
-	srcPort  string
-	dstPort  string
-	protocol string
+	SrcIP    string
+	DstIP    string
+	SrcPort  string
+	DstPort  string
+	Protocol string
 }
 
 //var CommsCh chan tuple.T4[string, string, string, string]
@@ -51,9 +51,9 @@ func StreamData(file string) []Packet {
 			ipPacket, _ := ipLayer.(*layers.IPv4)
 			//fmt.Println("IP source address:", ipPacket.SrcIP)
 			//	fmt.Println("IP destination address:", ipPacket.DstIP)
-			packets.srcIP = ipPacket.SrcIP.String()
-			packets.dstIP = ipPacket.DstIP.String()
-			packets.protocol = ipPacket.Protocol.String()
+			packets.SrcIP = ipPacket.SrcIP.String()
+			packets.DstIP = ipPacket.DstIP.String()
+			packets.Protocol = ipPacket.Protocol.String()
 
 			// add to tuple
 		}
@@ -76,8 +76,8 @@ func StreamData(file string) []Packet {
 			//fmt.Println("SrcPrt:", tcpPacket.SrcPort)
 			//fmt.Println("DstPrt:", tcpPacket.DstPort)
 			// add to tuple
-			packets.srcPort = tcpPacket.SrcPort.String()
-			packets.dstPort = tcpPacket.DstPort.String()
+			packets.SrcPort = tcpPacket.SrcPort.String()
+			packets.DstPort = tcpPacket.DstPort.String()
 		}
 		//CommsCh <- netTup
 
@@ -91,11 +91,11 @@ func StreamData(file string) []Packet {
 func (p *Packet) ToBytes() []byte {
 	var str strings.Builder
 
-	str.WriteString(p.srcIP)
-	str.WriteString(p.dstIP)
-	str.WriteString(p.srcPort)
-	str.WriteString(p.dstPort)
-	str.WriteString(p.protocol)
+	str.WriteString(p.SrcIP)
+	str.WriteString(p.DstIP)
+	str.WriteString(p.SrcPort)
+	str.WriteString(p.DstPort)
+	str.WriteString(p.Protocol)
 
 	return []byte(str.String())
 }
