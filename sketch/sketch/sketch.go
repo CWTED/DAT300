@@ -1,6 +1,7 @@
 package sketch
 
 import (
+    "fmt"
     "hash"
     "errors"
     "hash/fnv"
@@ -116,6 +117,15 @@ func Combine(elem ... ScalarSketch) *Sketch {
     return combinedSketch
 }
 
+
+func (s *Sketch) Print() {
+    for _, row := range s.count {
+        for _, val := range row {
+            fmt.Printf("%d ", val)
+        }
+        fmt.Println()
+    }
+}
 
 // ------------------------------------ HELPER FUNCTIONS ---------------------------------------------------
 type ScalarSketch struct {
