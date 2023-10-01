@@ -64,6 +64,19 @@ func StreamData() []Packet {
 
 			// add to tuple
 		}
+
+		/*ipLayer6 := packet.Layer(layers.LayerTypeIPv6)
+		if ipLayer6 != nil {
+			ipPacket6, _ := ipLayer.(*layers.IPv6)
+			//fmt.Println("IP source address:", ipPacket.SrcIP)
+			//	fmt.Println("IP destination address:", ipPacket.DstIP)
+			packets.srcIP = ipPacket6.SrcIP.String()
+			packets.dstIP = ipPacket6.DstIP.String()
+			packets.protocol = ipPacket6.NextHeader.String()
+
+			// add to tuple
+		}*/
+
 		tcpLayer := packet.Layer(layers.LayerTypeTCP)
 		if tcpLayer != nil {
 			tcpPacket, _ := tcpLayer.(*layers.TCP)
