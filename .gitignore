@@ -20,3 +20,4 @@
 # Go workspace file
 go.work
 sketch/datastream/equinix-nyc.dirA.20190117-125910.UTC.anon.pcap
+sketch/data.csv
