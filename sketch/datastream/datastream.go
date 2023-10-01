@@ -4,6 +4,7 @@ import (
 	"fmt" // Import the fmt package to print messages to the console.
 	"log" // Import the log package to log errors to the console.
 	"os"
+	"strings"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -93,4 +94,16 @@ func StreamData() []Packet {
 	}
 	return packetList
 
+}
+
+func (p *Packet) ToBytes() []byte {
+	var str strings.Builder
+
+	str.WriteString(p.srcIP)
+	str.WriteString(p.dstIP)
+	str.WriteString(p.srcPort)
+	str.WriteString(p.dstPort)
+	str.WriteString(p.protocol)
+
+	return []byte(str.String())
 }
