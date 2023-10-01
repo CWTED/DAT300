@@ -34,14 +34,14 @@ func main() {
 	go datastream.StreamData(os.Args[1], dataChannel) // data pre-processing
 
 	// Create the main sketch
-	s, err := sketch.New(uint(h), uint(k))
+	s, err := sketch.New(h, k)
 	if err != nil {
 		log.Fatalln("error while creating sketch", err)
 	}
 
 	// Forcasting variables
 	var (
-		forecastAlgo forecasting.Forecasting
+		forecastAlgo forecasting.EWMA
 		fSketch *sketch.Sketch
 	)
 	forecastAlgo = forecasting.EWMA{Alpha: 0.1}
@@ -49,7 +49,7 @@ func main() {
 	// Variable representing how many times the algorithm has iterated
 	index := 0
 	// Variable representing how many packets is one epoch
-	epoch := 10
+	epoch := 1000
 
 	for packet := range dataChannel {
 		// Update the forecasting sketch if there is a new epoch
@@ -58,26 +58,23 @@ func main() {
 			if err != nil {
 				log.Fatalln("error while forcasting", err)
 			}
-			fmt.Println("Forecasted: ")
-			fSketch.Print()
-			fmt.Println()
+			//fSketch.Print()
 		}
 
 		// Update the sketch with the incoming packet
 		s.Update(packet.ToBytes(), 1)
-
+		//fmt.Println(s.EstimateF2())
 		// Change detection
 		if index > epoch {
-			observedChange, thresholdChange, err := change.FEDetect(s, fSketch, 0.001, packet.ToBytes())
+			observedChange, thresholdChange, err := change.FEDetect(s, fSketch, 0.3, packet.ToBytes())
 			// If there is a change, save it in data.csv
 			if err != nil {
 				anomalies <- Data{packet: packet, observedChange: observedChange, thresholdChange: thresholdChange}
-				fmt.Printf("Anomaly detected!\t Observed change: %d, Threshold: %d", observedChange, thresholdChange)
+				fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index, observedChange, thresholdChange)
 			}
+
+
 		}
 		index++
 	}
-
-	fmt.Println("Main sketch at the end:")
-	s.Print()
 }

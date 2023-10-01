@@ -11,15 +11,15 @@ import (
 )
 
 type Sketch struct {
-    h    uint
-    k    uint
-    count [][]uint64
+    h    int
+    k    int
+    count [][]float64
     hasher hash.Hash64
 }
 
 // Creates a new sketch struture
 // Imported from https://github.com/shenwei356/countminsketch/blob/master/countminsketch.go
-func New(h uint, k uint) (s *Sketch, err error) {
+func New(h int, k int) (s *Sketch, err error) {
 	if h <= 0 || k <= 0 {
 		return nil, errors.New("countminsketch: values of d and w should both be greater than 0")
 	}
@@ -29,9 +29,9 @@ func New(h uint, k uint) (s *Sketch, err error) {
 		k:      k,
 		hasher: fnv.New64(),
 	}
-	s.count = make([][]uint64, h)
-	for r := uint(0); r < h; r++ {
-		s.count[r] = make([]uint64, k)
+	s.count = make([][]float64, h)
+	for r := uint(0); r < uint(h); r++ {
+		s.count[r] = make([]float64, k)
 	}
 
 	return s, nil
@@ -47,8 +47,8 @@ func NewWithEstimates(epsilon, delta float64) (*Sketch, error) {
 		return nil, errors.New("countminsketch: value of delta should be in range of (0, 1)")
 	}
 
-	k := uint(math.Ceil(2 / epsilon))
-	h := uint(math.Ceil(math.Log(1-delta) / math.Log(0.5)))
+	k := int(math.Ceil(2 / epsilon))
+	h := int(math.Ceil(math.Log(1-delta) / math.Log(0.5)))
 	// fmt.Printf("ε: %f, δ: %f -> d: %d, w: %d\n", epsilon, delta, d, w)
 	return New(h, k)
 }
@@ -56,21 +56,21 @@ func NewWithEstimates(epsilon, delta float64) (*Sketch, error) {
 
 // Update the frequency of a key
 // Imported from https://github.com/shenwei356/countminsketch/blob/master/countminsketch.go
-func (s *Sketch) Update(key []byte, count uint64) {
+func (s *Sketch) Update(key []byte, count float64) {
 	for r, c := range s.locations(key) {
 		s.count[r][c] += count
 	}
 }
 
 // Estimate a given key
-func (s *Sketch) Estimate(key []byte) uint64 {
-    var vEst uint64
+func (s *Sketch) Estimate(key []byte) float64 {
+    var vEst float64
 
 
-    var v = make([]uint64, s.H())
+    var v = make([]float64, s.H())
 
     for index, val := range s.locations(key) {
-        v[index] = (s.count[index][val] - s.sum()/(uint64(s.K()))) / uint64(1 - 1 / s.K())
+        v[index] = float64(s.count[index][val] - s.sum()/float64(s.k)) / float64((1 - 1 / s.K()))
     }
 
     vEst = median(v)
@@ -79,19 +79,19 @@ func (s *Sketch) Estimate(key []byte) uint64 {
 }
 
 // Estimate the second moment 
-func (s *Sketch) EstimateF2() uint64 {
-    var f2Est uint64
+func (s *Sketch) EstimateF2() float64 {
+    var f2Est float64
 
-    var f2 = make([]uint64, s.H())
+    var f2 = make([]float64, s.H())
 
     for index, row := range s.count {
-        var temp uint64
+        var temp float64
 
         for _, val := range row {
-            temp += val^2
+            temp += val * val
         }
 
-        f2[index] = uint64(s.K() / (s.K() - 1)) * temp - uint64(1 / (s.K() - 1)) * s.sum()^2
+        f2[index] = float64(s.K() / (s.K() - 1)) * temp - float64((1 / (s.K() - 1))) * (s.sum() * s.sum())
     }
 
     f2Est = median(f2)
@@ -110,7 +110,7 @@ func Combine(elem ... ScalarSketch) *Sketch {
                 sum += float64(scalarSketch.Sketch.count[i][j]) * scalarSketch.Alpha
             }
 
-            combinedSketch.count[i][j] = uint64(sum)
+            combinedSketch.count[i][j] = sum
         }
     }
 
@@ -121,7 +121,7 @@ func Combine(elem ... ScalarSketch) *Sketch {
 func (s *Sketch) Print() {
     for _, row := range s.count {
         for _, val := range row {
-            fmt.Printf("%d ", val)
+            fmt.Printf("%f ", val)
         }
         fmt.Println()
     }
@@ -133,12 +133,12 @@ type ScalarSketch struct {
     Alpha float64
 }
 // D returns the number of hashing functions
-func (s *Sketch) H() uint {
+func (s *Sketch) H() int {
 	return s.h
 }
 
 // W returns the size of hashing functions
-func (s *Sketch) K() uint {
+func (s *Sketch) K() int {
 	return s.k
 }
 
@@ -163,13 +163,13 @@ func (s *Sketch) locations(key []byte) (locs []uint) {
 	a, b := s.baseHashes(key)
 	ua := uint(a)
 	ub := uint(b)
-	for r := uint(0); r < s.h; r++ {
-		locs[r] = (ua + ub*r) % s.k
+	for r := uint(0); r < uint(s.h); r++ {
+		locs[r] = (ua + ub*r) % uint(s.k)
 	}
 	return
 }
 
-func median(arr []uint64) uint64 {
+func median(arr []float64) float64 {
     sort.Slice(arr, func(i, j int) bool {return arr[i] < arr[j]})   // Adapted from https://stackoverflow.com/questions/38607733/sorting-a-uint64-slice-in-go
 
     len := len(arr)
@@ -183,8 +183,8 @@ func median(arr []uint64) uint64 {
     }
 }
 
-func (s *Sketch) sum() uint64 {
-    var sum uint64
+func (s *Sketch) sum() float64 {
+    var sum float64
     for _, val := range s.count[0] {
         sum += val
     }

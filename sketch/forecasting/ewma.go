@@ -10,7 +10,7 @@ type EWMA struct {
 }
 
 // Calculate the forecasted sketch using EWMA
-func (ewma EWMA) Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error) {
+func (ewma *EWMA) Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error) {
 
 	// If t = 2, then S_f(t) = S_o(1)
 	if ewma.PreviousF == nil {

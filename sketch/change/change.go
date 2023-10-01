@@ -12,9 +12,8 @@ type Change struct {
 	erSk  *sketch.Sketch // Error sketch
 }
 
-func FEDetect(observed *sketch.Sketch, forecasted *sketch.Sketch, T float64, key []byte) (uint64, uint64, error) {
+func FEDetect(observed *sketch.Sketch, forecasted *sketch.Sketch, T float64, key []byte) (float64, float64, error) {
 	change := Change{obs: observed, forec: forecasted}
-
 	change.errorSketch()
 
 	return reconstructFE(&change, key, T)
@@ -28,12 +27,12 @@ func (s *Change) errorSketch() {
 
 // Choose threshold from c.skEr, T,
 // reconstruct forecast error from given key and alert if above threshold TA
-func reconstructFE(c *Change, key []byte, T float64) (uint64, uint64, error) {
+func reconstructFE(c *Change, key []byte, T float64) (float64, float64, error) {
 
 	TA := chooseThreshold(c, T)
 
 	FE := c.erSk.Estimate(key)
-
+	//fmt.Printf("%f\t%f\n", TA, FE)
 	if FE > TA {
 		return FE, TA, errors.New("Error over TA hreshold")
 	} else {
@@ -42,8 +41,6 @@ func reconstructFE(c *Change, key []byte, T float64) (uint64, uint64, error) {
 }
 
 // Choose threshold by altering T-value: Lower T gives lower threshold
-func chooseThreshold(c *Change, T float64) uint64 {
-
-	return uint64(T * math.Pow(float64(c.erSk.EstimateF2()), float64(0.5)))
-
+func chooseThreshold(c *Change, T float64) float64 {
+	return (T * math.Pow(float64(c.erSk.EstimateF2()), float64(0.5)))
 }

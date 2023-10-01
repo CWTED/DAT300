@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"log"
 	"os"
-	"strconv"
+	"fmt"
 
 	"sketch/datastream"
 )
@@ -21,7 +21,7 @@ func ExportData(channel chan Data) {
 
 	for data := range channel {
 		row := []string{data.packet.SrcIP, data.packet.DstIP, data.packet.SrcPort, data.packet.DstPort, 
-						data.packet.Protocol, strconv.FormatUint(data.observedChange, 10), strconv.FormatUint(data.thresholdChange, 10)}
+						data.packet.Protocol, fmt.Sprintf("%f", data.observedChange), fmt.Sprintf("%f", data.thresholdChange)}
 		if err := w.Write(row); err != nil {
 			log.Fatalln("error writing tuple to file", err)
 		}
@@ -31,6 +31,6 @@ func ExportData(channel chan Data) {
 
 type Data struct {
 	packet datastream.Packet
-	observedChange uint64
-	thresholdChange uint64
+	observedChange float64
+	thresholdChange float64
 }
