@@ -5,5 +5,5 @@ import (
 )
 
 type Forecasting interface {
-	Forecast(prevO *sketch.Sketch) (sketch.Sketch, error)
+	Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error)
 }
