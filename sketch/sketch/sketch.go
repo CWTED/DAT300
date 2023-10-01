@@ -1,6 +1,7 @@
 package sketch
 
 import (
+    "fmt"
     "hash"
     "errors"
     "hash/fnv"
@@ -100,9 +101,9 @@ func (s *Sketch) EstimateF2() uint64 {
 
 // Combine multiple sketches
 func Combine(elem ... ScalarSketch) *Sketch {
-    combinedSketch := elem[0].Sketch
+    combinedSketch, _ := New(elem[0].Sketch.h, elem[0].Sketch.k)
 
-    for i, row := range combinedSketch.count {
+    for i, row := range elem[0].Sketch.count {
         for j := range row {
             var sum float64
             for _, scalarSketch := range elem {
@@ -116,6 +117,15 @@ func Combine(elem ... ScalarSketch) *Sketch {
     return combinedSketch
 }
 
+
+func (s *Sketch) Print() {
+    for _, row := range s.count {
+        for _, val := range row {
+            fmt.Printf("%d ", val)
+        }
+        fmt.Println()
+    }
+}
 
 // ------------------------------------ HELPER FUNCTIONS ---------------------------------------------------
 type ScalarSketch struct {
