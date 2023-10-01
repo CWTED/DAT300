@@ -5,8 +5,10 @@ import (
 	"log"
 	"os"
 	"strconv"
+
 	"sketch/datastream"
 	"sketch/sketch"
+	"sketch/forecasting"
 )
 
 func main() {
@@ -26,19 +28,34 @@ func main() {
 
 	receivedList := datastream.StreamData(os.Args[1]) // data pre-processing
 
-	sketch, err := sketch.New(uint(h), uint(k))
+	// Create the main sketch
+	s, err := sketch.New(uint(h), uint(k))
 	if err != nil {
 		log.Fatalln("error while creating sketch", err)
 	}
 
-	for _, packet := range receivedList {
-		fmt.Println(packet)
+	// Forcasting variables
+	var (
+		forecastAlgo forecasting.Forecasting
+		fSketch sketch.Sketch
+	)
+	forecastAlgo = forecasting.EWMA{Alpha: 0.5}
 
-		sketch.Update(packet.ToBytes(), 1)
+	for index, packet := range receivedList {
+		// Update the forecasting sketch if there is a new epoch
+		if index % 10 == 0 {
+			fSketch, err = forecastAlgo.Forecast(s)
+			if err != nil {
+				log.Fatalln("error while forcasting", err)
+			}
+			fmt.Println("Forecasted: ")
+			fSketch.Print()
+			fmt.Println()
+		}
+
+		// Update the sketch with the incoming packet
+		s.Update(packet.ToBytes(), 1)
 	}
 
-	sketch.Print()
-
-	// print the estimate of the kary sketch
-	//fmt.Printf("Result: %v", kary.Estimate())
+	s.Print()
 }
