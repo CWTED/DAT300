@@ -19,12 +19,7 @@ func ExportData(channel chan Data) {
 	w := csv.NewWriter(f)
 
 
-	for {
-		data, ok := <- channel
-		if !ok {
-			break
-		}
-		
+	for data := range channel {
 		row := []string{data.packet.SrcIP, data.packet.DstIP, data.packet.SrcPort, data.packet.DstPort, 
 						data.packet.Protocol, strconv.FormatUint(data.observedChange, 10), strconv.FormatUint(data.thresholdChange, 10)}
 		if err := w.Write(row); err != nil {
