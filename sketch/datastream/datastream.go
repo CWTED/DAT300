@@ -1,9 +1,7 @@
 package datastream
 
 import (
-	"fmt" // Import the fmt package to print messages to the console.
 	"log" // Import the log package to log errors to the console.
-	"os"
 	"strings"
 
 	"github.com/google/gopacket"
@@ -21,15 +19,9 @@ type Packet struct {
 
 //var CommsCh chan tuple.T4[string, string, string, string]
 
-func StreamData() []Packet {
-	// Check if file argument is provided
-	if len(os.Args) < 2 {
-		fmt.Println("Please provide a pcap file to read")
-		os.Exit(1)
-	}
-
+func StreamData(file string) []Packet {
 	// Open up the pcap file for reading
-	handle, err := pcap.OpenOffline(os.Args[1])
+	handle, err := pcap.OpenOffline(file)
 	if err != nil {
 		log.Fatal(err)
 	}
