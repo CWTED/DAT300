@@ -41,10 +41,10 @@ func main() {
 
 	// Forcasting variables
 	var (
-		forecastAlgo forecasting.EWMA
+		forecastAlgo forecasting.Forecasting
 		fSketch *sketch.Sketch
 	)
-	forecastAlgo = forecasting.EWMA{Alpha: 0.1}
+	forecastAlgo = &forecasting.EWMA{Alpha: 0.1}
 
 	// Variable representing how many times the algorithm has iterated
 	index := 0
