@@ -52,15 +52,13 @@ func StreamData(file string, channel chan Packet) {
 			p.Protocol = ipPacket.Protocol.String()
 		}
 
-		/*ipLayer6 := packet.Layer(layers.LayerTypeIPv6)
+		ipLayer6 := packet.Layer(layers.LayerTypeIPv6)
 		if ipLayer6 != nil {
-			ipPacket6, _ := ipLayer.(*layers.IPv6)
-			//fmt.Println("IP source address:", ipPacket.SrcIP)
-			//	fmt.Println("IP destination address:", ipPacket.DstIP)
-			packets.srcIP = ipPacket6.SrcIP.String()
-			packets.dstIP = ipPacket6.DstIP.String()
-			packets.protocol = ipPacket6.NextHeader.String()
-		}*/
+			ipPacket6, _ := ipLayer6.(*layers.IPv6)
+			p.SrcIP = ipPacket6.SrcIP.String()
+			p.DstIP = ipPacket6.DstIP.String()
+			p.Protocol = ipPacket6.NextHeader.String()
+		}
 
 		tcpLayer := packet.Layer(layers.LayerTypeTCP)
 		if tcpLayer != nil {
