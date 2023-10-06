@@ -35,9 +35,14 @@ func StreamData(file string, channel chan Packet) {
 	for packet := range packetSource.Packets() {
 		// Extract and print the IP layer
 		ethLayer := packet.Layer(layers.LayerTypeEthernet)
-		ethPacket := ethLayer.(*layers.Ethernet)
-		p.SrcMAC = ethPacket.SrcMAC.String()
-		p.DstMAC = ethPacket.DstMAC.String()
+		if ethLayer != nil {
+			ethPacket := ethLayer.(*layers.Ethernet)
+			p.SrcMAC = ethPacket.SrcMAC.String()
+			p.DstMAC = ethPacket.DstMAC.String()
+		} else {
+			p.SrcMAC = ""
+			p.DstMAC = ""
+		}
 
 		ipLayer := packet.Layer(layers.LayerTypeIPv4)
 		if ipLayer != nil {

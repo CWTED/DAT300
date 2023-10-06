@@ -42,7 +42,6 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 			if err != nil {
 				log.Fatalln("error while forcasting", err)
 			}
-			fmt.Println("Hej")
 		}
 
 		// Update the sketch with the incoming packet
