@@ -20,7 +20,7 @@ func ExportData(channel chan Data) {
 
 
 	for data := range channel {
-		row := []string{data.packet.SrcIP, data.packet.DstIP, data.packet.SrcPort, data.packet.DstPort, 
+		row := []string{data.packet.SrcMAC, data.packet.DstMAC, data.packet.SrcIP, data.packet.DstIP, data.packet.SrcPort, data.packet.DstPort, 
 						data.packet.Protocol, fmt.Sprintf("%f", data.observedChange), fmt.Sprintf("%f", data.thresholdChange)}
 		if err := w.Write(row); err != nil {
 			log.Fatalln("error writing tuple to file", err)

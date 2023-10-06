@@ -10,6 +10,8 @@ import (
 )
 
 type Packet struct {
+	SrcMAC 	 string
+	DstMAC	 string 
 	SrcIP    string
 	DstIP    string
 	SrcPort  string
@@ -32,6 +34,11 @@ func StreamData(file string, channel chan Packet) {
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range packetSource.Packets() {
 		// Extract and print the IP layer
+		ethLayer := packet.Layer(layers.LayerTypeEthernet)
+		ethPacket := ethLayer.(*layers.Ethernet)
+		p.SrcMAC = ethPacket.SrcMAC.String()
+		p.DstMAC = ethPacket.DstMAC.String()
+
 		ipLayer := packet.Layer(layers.LayerTypeIPv4)
 		if ipLayer != nil {
 			ipPacket, _ := ipLayer.(*layers.IPv4)
@@ -64,6 +71,8 @@ func StreamData(file string, channel chan Packet) {
 func (p *Packet) ToBytes() []byte {
 	var str strings.Builder
 
+	str.WriteString(p.SrcMAC)
+	str.WriteString(p.DstMAC)
 	str.WriteString(p.SrcIP)
 	str.WriteString(p.DstIP)
 	str.WriteString(p.SrcPort)
