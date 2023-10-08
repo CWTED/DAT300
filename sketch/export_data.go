@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"fmt"
+	"strconv"
 
 	"sketch/datastream"
 )
@@ -20,7 +21,7 @@ func ExportData(channel chan Data) {
 
 
 	for data := range channel {
-		row := []string{data.packet.SrcMAC, data.packet.DstMAC, data.packet.SrcIP, data.packet.DstIP, data.packet.SrcPort, data.packet.DstPort, 
+		row := []string{strconv.Itoa(data.index), data.packet.SrcMAC, data.packet.DstMAC, data.packet.SrcIP, data.packet.DstIP, data.packet.SrcPort, data.packet.DstPort, 
 						data.packet.Protocol, fmt.Sprintf("%f", data.observedChange), fmt.Sprintf("%f", data.thresholdChange)}
 		if err := w.Write(row); err != nil {
 			log.Fatalln("error writing tuple to file", err)
@@ -30,6 +31,7 @@ func ExportData(channel chan Data) {
 }
 
 type Data struct {
+	index int
 	packet datastream.Packet
 	observedChange float64
 	thresholdChange float64
