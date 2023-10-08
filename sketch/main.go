@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"flag"
 )
 
@@ -23,10 +22,6 @@ func main() {
 	flag.Float64Var(&alpha, "alpha", 0.5, "Alpha used in EWMA")
 
 	flag.Parse()
-
-	if file == "" {
-		log.Fatalln("error: location of pcap file needed")
-	}
 
 	Kary(file, h, k, epoch, threshold, alpha)
 }
