@@ -16,8 +16,11 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 	defer close(anomalies)
 
 	dataChannel := make(chan datastream.Packet)
-	//go datastream.StreamData(file, dataChannel) // data pre-processing
-	go datastream.SyntheticDataStream(dataChannel)
+	if file != "" {
+		go datastream.StreamData(file, dataChannel) // data pre-processing
+	} else {
+		go datastream.SyntheticDataStream(dataChannel)
+	}
 
 	// Create the main sketch
 	s, err := sketch.New(h, k)
