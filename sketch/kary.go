@@ -16,7 +16,11 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 	defer close(anomalies)
 
 	dataChannel := make(chan datastream.Packet)
-	go datastream.StreamData(file, dataChannel) // data pre-processing
+	if file != "" {
+		go datastream.StreamData(file, dataChannel) // data pre-processing
+	} else {
+		go datastream.SyntheticDataStream(dataChannel)
+	}
 
 	// Create the main sketch
 	s, err := sketch.New(h, k)
@@ -48,11 +52,11 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 		s.Update(packet.ToBytes(), 1)
 
 		// Change detection
-		if index > epoch {
+		if index >= epoch {
 			observedChange, thresholdChange, err := change.FEDetect(s, fSketch, threshold, packet.ToBytes())
 			// If there is a change, save it in data.csv
 			if err != nil {
-				anomalies <- Data{packet: packet, observedChange: observedChange, thresholdChange: thresholdChange}
+				anomalies <- Data{index: index, packet: packet, observedChange: observedChange, thresholdChange: thresholdChange}
 				fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index, observedChange, thresholdChange)
 			}
 		}

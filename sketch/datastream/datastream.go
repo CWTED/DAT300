@@ -20,6 +20,9 @@ type Packet struct {
 }
 
 func StreamData(file string, channel chan Packet) {
+	if file == "" {
+		log.Fatalln("error: location of pcap file needed")
+	}
 	// Open up the pcap file for reading
 	handle, err := pcap.OpenOffline(file)
 	if err != nil {
