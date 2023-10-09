@@ -70,7 +70,7 @@ func (s *Sketch) Estimate(key []byte) float64 {
     var v = make([]float64, s.H())
 
     for index, val := range s.locations(key) {
-        v[index] = float64(s.count[index][val] - s.sum()/float64(s.k)) / float64((1 - 1 / s.K()))
+        v[index] = (s.count[index][val] - s.sum()/float64(s.k)) / (1 - 1 / float64(s.K()))
     }
 
     vEst = median(v)
@@ -91,7 +91,7 @@ func (s *Sketch) EstimateF2() float64 {
             temp += val * val
         }
 
-        f2[index] = float64(s.K() / (s.K() - 1)) * temp - float64((1 / (s.K() - 1))) * (s.sum() * s.sum())
+        f2[index] = (float64(s.K()) / float64(s.K() - 1)) * temp - (1 / (float64(s.K()) - 1)) * (s.sum() * s.sum())
     }
 
     f2Est = median(f2)
