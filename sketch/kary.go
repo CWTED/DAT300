@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	_"fmt"
 	"log"
 
 	"sketch/datastream"
@@ -30,10 +30,10 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 
 	// Forcasting variables
 	var (
-		forecastAlgo forecasting.Forecasting
+		forecastAlgo *forecasting.AccVel
 		fSketch *sketch.Sketch
 	)
-	forecastAlgo = &forecasting.EWMA{Alpha: alpha}
+	forecastAlgo = &forecasting.AccVel{Window: 5}
 
 
 	// Variable representing how many times the algorithm has iterated
@@ -46,10 +46,12 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 			if err != nil {
 				log.Fatalln("error while forcasting", err)
 			}
+			fSketch.Print()
 		}
 
 		// Update the sketch with the incoming packet
 		s.Update(packet.ToBytes(), 1)
+		forecastAlgo.UpdateVelocity(s)
 
 		// Change detection
 		if index >= epoch {
@@ -57,7 +59,7 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 			// If there is a change, save it in data.csv
 			if err != nil {
 				anomalies <- Data{index: index, packet: packet, observedChange: observedChange, thresholdChange: thresholdChange}
-				fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index, observedChange, thresholdChange)
+				//fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index, observedChange, thresholdChange)
 			}
 		}
 		index++
