@@ -1,7 +1,7 @@
 package main
 
 import (
-	_"fmt"
+	"fmt"
 	"log"
 
 	"sketch/datastream"
@@ -33,7 +33,7 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 		forecastAlgo *forecasting.AccVel
 		fSketch *sketch.Sketch
 	)
-	forecastAlgo = forecasting.New(5, h, k)
+	forecastAlgo = forecasting.New(epoch, h, k)
 
 
 	// Variable representing how many times the algorithm has iterated
@@ -59,7 +59,7 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 			// If there is a change, save it in data.csv
 			if err != nil {
 				anomalies <- Data{index: index, packet: packet, observedChange: observedChange, thresholdChange: thresholdChange}
-				//fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index, observedChange, thresholdChange)
+				fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index, observedChange, thresholdChange)
 			}
 		}
 		index++

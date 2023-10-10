@@ -2,7 +2,6 @@ package forecasting
 
 import (
 	"sketch/sketch"
-	"fmt"
 )
 
 type AccVel struct {
@@ -31,9 +30,6 @@ func (accvel *AccVel) Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error) {
 	}
 	velocity := sketch.Combine(sketch.ScalarSketch{Sketch: accvel.vSketches[len(accvel.vSketches) - 1], Alpha: 1}, 
 							   sketch.ScalarSketch{Sketch: accvel.vSketches[0], Alpha: -1})
-	fmt.Println("-----------")
-	velocity.Print()
-
 
 	acceleration := sketch.Combine(sketch.ScalarSketch{Sketch: velocity, Alpha: 1}, sketch.ScalarSketch{Sketch: accvel.previousVelocity, Alpha: -1})
 
