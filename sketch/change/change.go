@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"sketch/sketch"
+	_"fmt"
 )
 
 type Change struct {
@@ -23,6 +24,14 @@ func (s *Change) errorSketch() {
 	observed := sketch.ScalarSketch{Sketch: s.obs, Alpha: 1}
 	previous := sketch.ScalarSketch{Sketch: s.forec, Alpha: -1}
 	s.erSk = sketch.Combine(observed, previous)
+
+	//fmt.Println("-------------------")
+	//observed.Sketch.Print()
+	//fmt.Println()
+	//previous.Sketch.Print()
+	//fmt.Println()
+	//s.erSk.Print()
+	//fmt.Println("zzzzzzzzzzzzzzzzzzz")
 }
 
 // Choose threshold from c.skEr, T,

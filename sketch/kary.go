@@ -33,7 +33,7 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 		forecastAlgo *forecasting.AccVel
 		fSketch *sketch.Sketch
 	)
-	forecastAlgo = &forecasting.AccVel{Window: 5}
+	forecastAlgo = forecasting.New(5, h, k)
 
 
 	// Variable representing how many times the algorithm has iterated
@@ -46,7 +46,7 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 			if err != nil {
 				log.Fatalln("error while forcasting", err)
 			}
-			fSketch.Print()
+			//fSketch.Print()
 		}
 
 		// Update the sketch with the incoming packet
