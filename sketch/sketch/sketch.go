@@ -13,7 +13,7 @@ import (
 type Sketch struct {
     h    int
     k    int
-    count [][]float64
+    Count [][]float64
     hasher hash.Hash64
 }
 
@@ -29,9 +29,9 @@ func New(h int, k int) (s *Sketch, err error) {
 		k:      k,
 		hasher: fnv.New64(),
 	}
-	s.count = make([][]float64, h)
+	s.Count = make([][]float64, h)
 	for r := uint(0); r < uint(h); r++ {
-		s.count[r] = make([]float64, k)
+		s.Count[r] = make([]float64, k)
 	}
 
 	return s, nil
@@ -58,7 +58,7 @@ func NewWithEstimates(epsilon, delta float64) (*Sketch, error) {
 // Imported from https://github.com/shenwei356/countminsketch/blob/master/countminsketch.go
 func (s *Sketch) Update(key []byte, count float64) {
 	for r, c := range s.locations(key) {
-		s.count[r][c] += count
+		s.Count[r][c] += count
 	}
 }
 
@@ -70,7 +70,7 @@ func (s *Sketch) Estimate(key []byte) float64 {
     var v = make([]float64, s.H())
 
     for index, val := range s.locations(key) {
-        v[index] = (s.count[index][val] - s.sum()/float64(s.k)) / (1 - 1 / float64(s.K()))
+        v[index] = (s.Count[index][val] - s.sum()/float64(s.k)) / (1 - 1 / float64(s.K()))
     }
 
     vEst = median(v)
@@ -84,7 +84,7 @@ func (s *Sketch) EstimateF2() float64 {
 
     var f2 = make([]float64, s.H())
 
-    for index, row := range s.count {
+    for index, row := range s.Count {
         var temp float64
 
         for _, val := range row {
@@ -103,14 +103,14 @@ func (s *Sketch) EstimateF2() float64 {
 func Combine(elem ... ScalarSketch) *Sketch {
     combinedSketch, _ := New(elem[0].Sketch.h, elem[0].Sketch.k)
 
-    for i, row := range elem[0].Sketch.count {
+    for i, row := range elem[0].Sketch.Count {
         for j := range row {
             var sum float64
             for _, scalarSketch := range elem {
-                sum += float64(scalarSketch.Sketch.count[i][j]) * scalarSketch.Alpha
+                sum += float64(scalarSketch.Sketch.Count[i][j]) * scalarSketch.Alpha
             }
 
-            combinedSketch.count[i][j] = sum
+            combinedSketch.Count[i][j] = sum
         }
     }
 
@@ -119,7 +119,7 @@ func Combine(elem ... ScalarSketch) *Sketch {
 
 
 func (s *Sketch) Print() {
-    for _, row := range s.count {
+    for _, row := range s.Count {
         for _, val := range row {
             fmt.Printf("%f ", val)
         }
@@ -185,7 +185,7 @@ func median(arr []float64) float64 {
 
 func (s *Sketch) sum() float64 {
     var sum float64
-    for _, val := range s.count[0] {
+    for _, val := range s.Count[0] {
         sum += val
     }
 

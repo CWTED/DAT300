@@ -9,6 +9,15 @@ type AccVel struct {
 	Window int
 	vSketches []*sketch.Sketch
 	previousVelocity *sketch.Sketch
+	index int
+}
+
+func New(window int, h int, k int) *AccVel {
+	vS := make([]*sketch.Sketch, window)
+	for index := range vS {
+		vS[index], _ = sketch.New(h, k)
+	}
+	return &AccVel{Window: window, vSketches: vS}
 }
 
 func (accvel *AccVel) Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error) {
@@ -18,8 +27,8 @@ func (accvel *AccVel) Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error) {
 	if accvel.previousForecast == nil {
 		accvel.previousForecast = prevO
 	}
-	velocity := sketch.Combine(sketch.ScalarSketch{Sketch: accvel.vSketches[len(accvel.vSketches) - 1], Alpha: 1.0/float64(accvel.Window)}, 
-							   sketch.ScalarSketch{Sketch: accvel.vSketches[0], Alpha: -1.0/float64(accvel.Window)})
+	velocity := sketch.Combine(sketch.ScalarSketch{Sketch: accvel.vSketches[len(accvel.vSketches) - 1], Alpha: 1.0}, 
+							   sketch.ScalarSketch{Sketch: accvel.vSketches[0], Alpha: -1})
 
 
 
@@ -33,9 +42,10 @@ func (accvel *AccVel) Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error) {
 }
 
 func (accvel *AccVel) UpdateVelocity(s *sketch.Sketch) {
-	accvel.vSketches = append(accvel.vSketches, s)	
-
-	if len(accvel.vSketches) > accvel.Window {
-		accvel.vSketches = accvel.vSketches[1:]
+	if accvel.index < accvel.Window {
+		temp := s.Count
+		for i := accvel.index; i <= 0; i-- {
+			accvel.vSketches[i] = 
+		}
 	}
 }
