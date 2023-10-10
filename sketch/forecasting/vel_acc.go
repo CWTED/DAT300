@@ -2,7 +2,6 @@ package forecasting
 
 import (
 	"sketch/sketch"
-	"fmt"
 )
 
 type AccVel struct {
