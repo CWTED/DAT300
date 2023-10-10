@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"log"
 
-	"sketch/datastream"
-	"sketch/sketch"
-	"sketch/forecasting"
 	"sketch/change"
+	"sketch/datastream"
+	"sketch/forecasting"
+	"sketch/sketch"
 )
 
-func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64) {
+func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64, datapoints int, method string) {
 	anomalies := make(chan Data)
 	go ExportData(anomalies)
 	defer close(anomalies)
@@ -19,7 +19,7 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 	if file != "" {
 		go datastream.StreamData(file, dataChannel) // data pre-processing
 	} else {
-		go datastream.SyntheticDataStream(dataChannel)
+		go datastream.SyntheticDataStream(method, datapoints, dataChannel)
 	}
 
 	// Create the main sketch
@@ -32,9 +32,9 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 	var (
 		forecastAlgo *forecasting.AccVel
 		fSketch *sketch.Sketch
+
 	)
 	forecastAlgo = forecasting.New(epoch, h, k)
-
 
 	// Variable representing how many times the algorithm has iterated
 	index := 0
