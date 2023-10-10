@@ -45,27 +45,33 @@ func (accvel *AccVel) Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error) {
 }
 
 func (accvel *AccVel) UpdateVelocity(s *sketch.Sketch) {
+	var prev [][]float64
 	if accvel.index < accvel.Window && accvel.index != 0 {
-		prev := s.Count
+		prev = copyCount(s.Count)
 		for i := accvel.index; i >= 0; i-- {
-			temp := accvel.vSketches[i].Count
-			accvel.vSketches[i].Count = prev
+			temp := copyCount(accvel.vSketches[i].Count)
+			accvel.vSketches[i].Count = copyCount(prev)
 			prev = temp
 		}
 	} else if accvel.index >= accvel.Window {
-		prev := s.Count
+		prev = copyCount(s.Count)
 		for i := accvel.Window - 1; i >= 0; i-- {
-			temp := accvel.vSketches[i].Count
-			accvel.vSketches[i].Count = prev
+			temp := copyCount(accvel.vSketches[i].Count)
+			accvel.vSketches[i].Count = copyCount(prev)
 			prev = temp
 		}
 
 	} else {
-		accvel.vSketches[0].Count = s.Count
+		accvel.vSketches[0].Count = copyCount(s.Count)
 	}
-	fmt.Println("-----------")
-	accvel.vSketches[0].Print()
-	fmt.Println()
-	accvel.vSketches[len(accvel.vSketches) - 1].Print()
 	accvel.index++
+}
+
+func copyCount(src [][]float64) [][]float64 {
+	dst := make([][]float64, len(src))
+	for i := range src {
+		dst[i] = make([]float64, len(src[i]))
+		copy(dst[i], src[i])
+	}
+	return dst
 }
