@@ -30,10 +30,11 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 
 	// Forcasting variables
 	var (
-		forecastAlgo forecasting.Forecasting
-		fSketch      *sketch.Sketch
+		forecastAlgo *forecasting.AccVel
+		fSketch *sketch.Sketch
+
 	)
-	forecastAlgo = &forecasting.EWMA{Alpha: alpha}
+	forecastAlgo = forecasting.New(epoch, h, k)
 
 	// Variable representing how many times the algorithm has iterated
 	index := 0
@@ -45,10 +46,12 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 			if err != nil {
 				log.Fatalln("error while forcasting", err)
 			}
+			//fSketch.Print()
 		}
 
 		// Update the sketch with the incoming packet
 		s.Update(packet.ToBytes(), 1)
+		forecastAlgo.UpdateVelocity(s)
 
 		// Change detection
 		if index >= epoch {
