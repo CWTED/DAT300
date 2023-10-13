@@ -30,11 +30,11 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 
 	// Forcasting variables
 	var (
-		forecastAlgo *forecasting.AccVel
+		forecastAlgo *forecasting.EWMA
 		fSketch *sketch.Sketch
 
 	)
-	forecastAlgo = forecasting.New(epoch, h, k)
+	forecastAlgo = &forecasting.EWMA{Alpha: alpha}
 
 	// Variable representing how many times the algorithm has iterated
 	index := 0
@@ -44,14 +44,24 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 		if index % epoch == 0 && index > 0 {
 			fSketch, err = forecastAlgo.Forecast(s)
 			if err != nil {
-				log.Fatalln("error while forcasting", err)
+				log.Fatalln("error while creating new sketch", err)
 			}
 			//fSketch.Print()
+
+			// Here we can perform the change detection instead
+			// We need to record all packets during this epoch to be able to do it, 
+			// such as adding them to a list and then iterating through it
+
+			// Create new EWMA observed sketch for new epoch
+			s, err = sketch.New(h,k)
+			if err != nil {
+				log.Fatalln("error while performing sketch", err)
+			}
 		}
 
 		// Update the sketch with the incoming packet
 		s.Update(packet.ToBytes(), 1)
-		forecastAlgo.UpdateVelocity(s)
+		//forecastAlgo.UpdateVelocity(s)
 
 		// Change detection
 		if index >= epoch {
