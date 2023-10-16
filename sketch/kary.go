@@ -31,8 +31,7 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 	// Forcasting variables
 	var (
 		forecastAlgo *forecasting.AccVel
-		fSketch *sketch.Sketch
-
+		fSketch      *sketch.Sketch
 	)
 	forecastAlgo = forecasting.New(epoch, h, k)
 
@@ -41,7 +40,7 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 
 	for packet := range dataChannel {
 		// Update the forecasting sketch if there is a new epoch
-		if index % epoch == 0 && index > 0 {
+		if index%epoch == 0 && index > 0 {
 			fSketch, err = forecastAlgo.Forecast(s)
 			if err != nil {
 				log.Fatalln("error while forcasting", err)

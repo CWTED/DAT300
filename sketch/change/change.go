@@ -2,9 +2,9 @@ package change
 
 import (
 	"errors"
+	_ "fmt"
 	"math"
 	"sketch/sketch"
-	_"fmt"
 )
 
 type Change struct {
@@ -41,9 +41,11 @@ func reconstructFE(c *Change, key []byte, T float64) (float64, float64, error) {
 	TA := chooseThreshold(c, T)
 
 	FE := c.erSk.Estimate(key)
+
+	epsilon := 0.000001 // Acceptable error margin, for float64 comparisons.
 	//fmt.Printf("%f\t%f\n", TA, FE)
-	if FE > TA {
-		return FE, TA, errors.New("Error over TA hreshold")
+	if (FE - TA) > epsilon /*FE > TA*/ {
+		return FE, TA, errors.New("Error over TA threshold")
 	} else {
 		return FE, TA, nil
 	}
