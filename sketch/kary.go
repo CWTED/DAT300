@@ -56,9 +56,6 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 				observedChange, thresholdChange, err := change.FEDetect(s, fSketch, threshold, p.ToBytes())
 				// If there is a change, save it in data.csv
 				if err != nil {
-					fmt.Println()
-					s.Print()
-					fSketch.Print()
 					anomalies <- Data{index: index - epoch + i, packet: p, observedChange: observedChange, thresholdChange: thresholdChange}
 					fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index - i, observedChange, thresholdChange)
 				}
