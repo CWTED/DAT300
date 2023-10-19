@@ -22,6 +22,8 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 		go datastream.SyntheticDataStream(method, datapoints, dataChannel)
 	}
 
+	packetList := make([]datastream.Packet, epoch)
+
 	// Create the main sketch
 	s, err := sketch.New(h, k)
 	if err != nil {
@@ -40,27 +42,34 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 
 	for packet := range dataChannel {
 		// Update the forecasting sketch if there is a new epoch
+
 		if index%epoch == 0 && index > 0 {
 			fSketch, err = forecastAlgo.Forecast(s)
 			if err != nil {
 				log.Fatalln("error while forcasting", err)
 			}
 			//fSketch.Print()
+			// Update the sketch with the incoming packet
+
+			// Change detection
+			for i, p := range packetList {
+				observedChange, thresholdChange, err := change.FEDetect(s, fSketch, threshold, p.ToBytes())
+				// If there is a change, save it in data.csv
+				if err != nil {
+					fmt.Println()
+					s.Print()
+					fSketch.Print()
+					anomalies <- Data{index: index - epoch + i, packet: p, observedChange: observedChange, thresholdChange: thresholdChange}
+					fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index - i, observedChange, thresholdChange)
+				}
+			}
 		}
 
-		// Update the sketch with the incoming packet
 		s.Update(packet.ToBytes(), 1)
 		forecastAlgo.UpdateVelocity(s)
 
-		// Change detection
-		if index >= epoch {
-			observedChange, thresholdChange, err := change.FEDetect(s, fSketch, threshold, packet.ToBytes())
-			// If there is a change, save it in data.csv
-			if err != nil {
-				anomalies <- Data{index: index, packet: packet, observedChange: observedChange, thresholdChange: thresholdChange}
-				fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index, observedChange, thresholdChange)
-			}
-		}
+		packetList[index % epoch] = packet
+
 		index++
 	}
 
