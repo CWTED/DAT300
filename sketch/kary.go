@@ -41,15 +41,12 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 	index := 0
 
 	for packet := range dataChannel {
-		// Update the forecasting sketch if there is a new epoch
-
+		// Handle new epoch
 		if index%epoch == 0 && index > 0 {
 			fSketch, err = forecastAlgo.Forecast(s)
 			if err != nil {
 				log.Fatalln("error while forcasting", err)
 			}
-			//fSketch.Print()
-			// Update the sketch with the incoming packet
 
 			// Change detection
 			for i, p := range packetList {
@@ -57,11 +54,12 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 				// If there is a change, save it in data.csv
 				if err != nil {
 					anomalies <- Data{index: index - epoch + i, packet: p, observedChange: observedChange, thresholdChange: thresholdChange}
-					fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index - i, observedChange, thresholdChange)
+					fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index - epoch + i, observedChange, thresholdChange)
 				}
 			}
 		}
 
+		// Update sketch and forecasting
 		s.Update(packet.ToBytes(), 1)
 		forecastAlgo.UpdateVelocity(s)
 

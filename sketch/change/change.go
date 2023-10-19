@@ -2,7 +2,6 @@ package change
 
 import (
 	"errors"
-	_ "fmt"
 	"math"
 	"sketch/sketch"
 )
@@ -24,14 +23,6 @@ func (s *Change) errorSketch() {
 	observed := sketch.ScalarSketch{Sketch: s.obs, Alpha: 1}
 	previous := sketch.ScalarSketch{Sketch: s.forec, Alpha: -1}
 	s.erSk = sketch.Combine(observed, previous)
-
-	//fmt.Println("-------------------")
-	//observed.Sketch.Print()
-	//fmt.Println()
-	//previous.Sketch.Print()
-	//fmt.Println()
-	//s.erSk.Print()
-	//fmt.Println("zzzzzzzzzzzzzzzzzzz")
 }
 
 // Choose threshold from c.skEr, T,
@@ -43,7 +34,6 @@ func reconstructFE(c *Change, key []byte, T float64) (float64, float64, error) {
 	FE := c.erSk.Estimate(key)
 
 	epsilon := 0.000001 // Acceptable error margin, for float64 comparisons.
-	//fmt.Printf("%f\t%f\n", TA, FE)
 	if (FE - TA) > epsilon /*FE > TA*/ {
 		return FE, TA, errors.New("Error over TA threshold")
 	} else {
