@@ -11,7 +11,7 @@ type AccVel struct {
 	index int
 }
 
-func New(window int, h int, k int) *AccVel {
+func NewVelAcc(window int, h int, k int) *AccVel {
 	vS := make([]*sketch.Sketch, window)
 	for index := range vS {
 		vS[index], _ = sketch.New(h, k)
@@ -37,7 +37,7 @@ func (accvel *AccVel) Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error) {
 	return forecast, nil
 }
 
-func (accvel *AccVel) UpdateVelocity(s *sketch.Sketch) {
+func (accvel *AccVel) Update(s *sketch.Sketch) {
 	var prev [][]float64
 	if accvel.index < accvel.Window && accvel.index != 0 {
 		prev = copyCount(s.Count)
