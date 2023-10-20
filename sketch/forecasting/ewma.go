@@ -9,6 +9,10 @@ type EWMA struct {
 	Alpha float64
 }
 
+func NewEWMA(alpha float64) *EWMA {
+	return &EWMA{Alpha: alpha}
+}
+
 // Calculate the forecasted sketch using EWMA
 func (ewma *EWMA) Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error) {
 
@@ -25,3 +29,5 @@ func (ewma *EWMA) Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error) {
 		return  forecasted, nil
 	}
 }
+
+func (ewma *EWMA) Update(s *sketch.Sketch) {}
