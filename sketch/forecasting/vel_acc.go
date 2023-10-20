@@ -16,27 +16,29 @@ func NewVelAcc(window int, h int, k int) *AccVel {
 	for index := range vS {
 		vS[index], _ = sketch.New(h, k)
 	}
-	
-	return &AccVel{Window: window, vSketches: vS, index: 0}
+	previousVelocity, _ := sketch.New(h, k)
+
+	return &AccVel{Window: window, vSketches: vS, index: 0, previousVelocity: previousVelocity}
 }
 
 func (accvel *AccVel) Forecast(prevO *sketch.Sketch) (*sketch.Sketch, error) {
-	if accvel.previousVelocity == nil {
-		accvel.previousVelocity, _ = sketch.New(prevO.H(), prevO.K())
-	}
+	// Calculate velocity element; difference between the latest and earliest sketch within the sliding window
 	velocity := sketch.Combine(sketch.ScalarSketch{Sketch: accvel.vSketches[len(accvel.vSketches) - 1], Alpha: 1}, 
 							   sketch.ScalarSketch{Sketch: accvel.vSketches[0], Alpha: -1})
 
+	// Acceleration is the difference between the current and previous velocity
 	acceleration := sketch.Combine(sketch.ScalarSketch{Sketch: velocity, Alpha: 1}, sketch.ScalarSketch{Sketch: accvel.previousVelocity, Alpha: -1})
 
-	accvel.previousVelocity.Count = copyCount(velocity.Count)
+	// New forcast is the sum of the observed sketch, velocity and acceleration
 	forecast := sketch.Combine(sketch.ScalarSketch{Sketch: prevO, Alpha: 1},
 											  sketch.ScalarSketch{Sketch: velocity, Alpha: 1},
 											  sketch.ScalarSketch{Sketch: acceleration, Alpha: 1})
 	
+	accvel.previousVelocity.Count = copyCount(velocity.Count)
 	return forecast, nil
 }
 
+// Updates the sliding window with new the latest observed sketch
 func (accvel *AccVel) Update(s *sketch.Sketch) {
 	var prev [][]float64
 	if accvel.index < accvel.Window && accvel.index != 0 {
@@ -60,6 +62,7 @@ func (accvel *AccVel) Update(s *sketch.Sketch) {
 	accvel.index++
 }
 
+// Helper function. Copy the count in sketch structure
 func copyCount(src [][]float64) [][]float64 {
 	dst := make([][]float64, len(src))
 	for i := range src {
