@@ -12,6 +12,8 @@ import (
 
 func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64, datapoints int, method string) {
 	anomalies := make(chan Data)
+	var packetList []datastream.Packet
+	var anomCounter int
 	go ExportData(anomalies)
 	defer close(anomalies)
 
@@ -32,40 +34,51 @@ func Kary(file string, h int, k int, epoch int, threshold float64, alpha float64
 
 	// Forcasting variables
 	var (
-		forecastAlgo *forecasting.AccVel
+		forecastAlgo *forecasting.EWMA
 		fSketch      *sketch.Sketch
 	)
-	forecastAlgo = forecasting.New(epoch, h, k)
+	forecastAlgo = &forecasting.EWMA{Alpha: alpha}
 
 	// Variable representing how many times the algorithm has iterated
 	index := 0
 
 	for packet := range dataChannel {
-		// Handle new epoch
 		if index%epoch == 0 && index > 0 {
 			fSketch, err = forecastAlgo.Forecast(s)
 			if err != nil {
-				log.Fatalln("error while forcasting", err)
+				log.Fatalln("error while creating new sketch", err)
 			}
 
-			// Change detection
 			for i, p := range packetList {
 				observedChange, thresholdChange, err := change.FEDetect(s, fSketch, threshold, p.ToBytes())
 				// If there is a change, save it in data.csv
 				if err != nil {
 					anomalies <- Data{index: index - epoch + i, packet: p, observedChange: observedChange, thresholdChange: thresholdChange}
-					fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index - epoch + i, observedChange, thresholdChange)
+
+					fmt.Printf("Anomaly detected! Index: %d\t Observed change: %f, Threshold: %f\n", index-epoch+i, observedChange, thresholdChange)
+					anomCounter++
 				}
 			}
+
+			// Create new EWMA observed sketch for new epoch
+			s, err = sketch.New(h, k)
+			if err != nil {
+				log.Fatalln("error while performing sketch", err)
+			}
+
+			// Empty packet list to only check packets from new epoch
+			packetList = packetList[:0]
 		}
 
 		// Update sketch and forecasting
 		s.Update(packet.ToBytes(), 1)
-		forecastAlgo.UpdateVelocity(s)
+		packetList = append(packetList, packet)
+		//forecastAlgo.UpdateVelocity(s)
 
 		packetList[index % epoch] = packet
 
 		index++
 	}
+	fmt.Print(anomCounter)
 
 }
