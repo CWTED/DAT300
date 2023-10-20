@@ -2,7 +2,6 @@ package change
 
 import (
 	"errors"
-	_ "fmt"
 	"math"
 	"sketch/sketch"
 )
